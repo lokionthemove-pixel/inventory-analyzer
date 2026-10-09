@@ -1,86 +1,42 @@
-// array 8 product names
-// array stock quantity corresponding product
-// calculate total item count, average stock quantity/product, highest stock, lowest stock
-// count: out of stock (0), low stock (1-5), normal stock (6-20), high stock (21+)
-// overall inventory status: "critical" <20, low 20-49, healthy 50-99, overstocked >100
+const calcInventoryQty = (inventory) => {
+  return inventory.reduce((acc, curr) => {
+    return acc + curr.quantity;
+  }, 0);
+};
 
-const countAllItems = (quantity) => {
-  return quantity.reduce((acc, curr) => {
-    return acc + curr;
+const calcAverageQty = (inventory) => {
+  return calcInventoryQty(inventory) / inventory.length;
+};
+
+const findLowestQty = (inventory) => {
+  let lowestStock = inventory[0];
+  inventory.forEach((element) => {
+    if (lowestStock.quantity > element.quantity) {
+      lowestStock = element;
+    }
   });
+  return `Name: ${lowestStock.name}, category: ${lowestStock.category}, price: ${lowestStock.price}, quantity: ${lowestStock.quantity}`;
 };
 
-const calcAverageQuantity = (quantity) => {
-  return Math.round(countAllItems(quantity) / quantity.length);
-};
-
-const findLowestStock = (quantity) => {
-  return quantity.reduce((lowest, compare) => {
-    if (lowest > compare) {
-      lowest = compare;
+const findHighestQty = (inventory) => {
+  let highestStock = inventory[0];
+  inventory.forEach((element) => {
+    if (highestStock.quantity < element.quantity) {
+      highestStock = element;
     }
-    return lowest;
   });
+  return `Name: ${highestStock.name}, category: ${highestStock.category}, price: ${highestStock.price}, quantity: ${highestStock.quantity}`;
 };
 
-const findHighestStock = (quantity) => {
-  return quantity.reduce((highest, compare) => {
-    if (highest < compare) {
-      highest = compare;
-    }
-    return highest;
-  });
-};
-
-const inventory = [
-  "banana",
-  "apple",
-  "orange",
-  "grape",
-  "watermelon",
-  "guava",
-  "kiwi",
-  "avocado",
-];
-const quantity = [11, 26, 38, 19, 3, 0, 40, 15];
-
-const countOutOfStock = (quantity) => {
-  return quantity.reduce((outOfStock, compare) => {
-    if (compare == 0) {
-      outOfStock++;
-    }
-    return outOfStock;
-  }, 0);
-};
-const countLowStock = (quantity) => {
-  return quantity.reduce((lowStock, compare) => {
-    if (compare >= 1 && compare <= 5) {
-      lowStock++;
-    }
-    return lowStock;
+const calcInventoryValue = (inventory) => {
+  return inventory.reduce((totalValue, current) => {
+    totalValue += current.price * current.quantity;
+    return totalValue;
   }, 0);
 };
 
-const countNormalStock = (quantity) => {
-  return quantity.reduce((normalStock, compare) => {
-    if (compare >= 6 && compare <= 20) {
-      normalStock++;
-    }
-    return normalStock;
-  }, 0);
-};
-
-const countHighStock = (quantity) => {
-  return quantity.reduce((highStock, compare) => {
-    if (compare >= 21) {
-      highStock++;
-    }
-    return highStock;
-  }, 0);
-};
-
-const rateInventoryStatus = (quantity) => {
-  const totalQuantity = countAllItems(quantity);
+const getInventoryStatus = (inventory) => {
+  const totalQuantity = calcInventoryQty(inventory);
   return totalQuantity >= 100
     ? "overstocked"
     : totalQuantity >= 50
@@ -90,34 +46,181 @@ const rateInventoryStatus = (quantity) => {
         : "critical";
 };
 
+const getProductStatus = (product) => {
+  return product.quantity > 20
+    ? "high"
+    : product.quantity >= 6
+      ? "normal"
+      : product.quantity >= 1
+        ? "low"
+        : "out-of-stock";
+};
+
+const filterByCategory = (inventory, category) => {
+  const productsInCategory = [];
+  inventory.forEach((product) => {
+    if (category === product.category) {
+      productsInCategory.push(product);
+    }
+  });
+  return productsInCategory;
+};
+
+const showByCategory = (inventory) => {
+  let category;
+  inventory.forEach((product) => {
+    if (category != product.category) {
+      category = product.category;
+      console.log("\n" + category.toUpperCase());
+    }
+    console.log(product);
+  });
+};
+
+const getProductByName = (inventory, productName) => {
+  return inventory.find((product) => product.name === productName);
+};
+
+const isExist = (inventory, productName) => {
+  if (getProductByName(inventory, productName)) return true;
+  else return false;
+};
+
+const filterByStatus = (inventory, status) => {
+  const filterResult = [];
+  inventory.forEach((product) => {
+    if (getProductStatus(product) === status) filterResult.push(product);
+  });
+  return filterResult;
+};
+
+const showArray = (arr) => arr.forEach((item) => console.log(item));
+
+const addNewProduct = (
+  inventory,
+  productName,
+  productCategory,
+  productPrice = 0,
+  productQty = 0,
+) => {
+  const newProduct = {
+    name: productName,
+    category: productCategory,
+    price: productPrice,
+    quantity: productQty,
+  };
+  inventory.push(newProduct);
+  console.log(`${productName} is succesfully added!`);
+};
+
+const removeProduct = (inventory, productName) => {
+  const removedProduct = inventory.find(
+    (product) => product.name === productName,
+  );
+  inventory.splice(inventory.indexOf(removedProduct), 1);
+  console.log(`${productName} is removed succesfully!`);
+};
+
+const updateProduct = (inventory, productName, key, value) => {
+  if (!["name", "category", "price", "quantity"].includes(key))
+    return console.error("Invalid property!");
+  inventory.find((product) => product.name === productName)[key] = value;
+};
+
+const sortQtyAscending = (inventory) => {
+  inventory.sort((a, b) => a.name.localeCompare(b.name));
+};
+
+const sortPriceDescending = (inventory) => {
+  inventory.sort((a, b) => b.price - a.price);
+};
+
+const inventory = [
+  { name: "banana", category: "fruits", price: 15000, quantity: 11 },
+  { name: "apple", category: "fruits", price: 25000, quantity: 26 },
+  { name: "orange", category: "fruits", price: 30000, quantity: 38 },
+  { name: "grape", category: "fruits", price: 40000, quantity: 19 },
+  { name: "watermelon", category: "fruits", price: 18000, quantity: 3 },
+  { name: "guava", category: "fruits", price: 12000, quantity: 0 },
+  { name: "kiwi", category: "fruits", price: 45000, quantity: 40 },
+  { name: "avocado", category: "fruits", price: 27000, quantity: 15 },
+  { name: "chair", category: "furnitures", price: 40000, quantity: 13 },
+  { name: "table", category: "furnitures", price: 70000, quantity: 5 },
+  { name: "cupboard", category: "furnitures", price: 270000, quantity: 4 },
+  { name: "lightbulb", category: "electronics", price: 10000, quantity: 10 },
+];
+
 console.log(`
     === INVENTORY ANALYZER ===
 
-Products:
-${inventory[0]}: ${quantity[0]}
-${inventory[1]}: ${quantity[1]}
-${inventory[2]}: ${quantity[2]}
-${inventory[3]}: ${quantity[3]}
-${inventory[4]}: ${quantity[4]}
-${inventory[5]}: ${quantity[5]}
-${inventory[6]}: ${quantity[6]}
-${inventory[7]}: ${quantity[7]}
+Products:`);
 
+showByCategory(inventory);
+
+console.log(`
 === SUMMARY ===
 
-Total Items: ${countAllItems(quantity)}
-Average Stock: ${calcAverageQuantity(quantity)}
-Highest Stock: ${findHighestStock(quantity)}
-Lowest Stock: ${findLowestStock(quantity)}
+Total Items: ${calcInventoryQty(inventory)}
+Average Stock: ${calcAverageQty(inventory)}
+Highest Stock: \n${findHighestQty(inventory)}
+Lowest Stock: \n${findLowestQty(inventory)}
 
 === STOCK CONDITIONS ===
 
-Out of Stock: ${countOutOfStock(quantity)}
-Low Stock: ${countLowStock(quantity)}
-Normal Stock: ${countNormalStock(quantity)}
-High Stock: ${countHighStock(quantity)}
+Out of Stock: \n${inventory
+  .filter((item) => getProductStatus(item) == "out-of-stock")
+  .map(
+    (item) =>
+      `name: ${item.name}, category: ${item.category}, price: ${item.price}, quantity: ${item.quantity}`,
+  )
+  .join("\n")}
+  
+Low Stock: \n${inventory
+  .filter((item) => getProductStatus(item) == "low")
+  .map(
+    (item) =>
+      `name: ${item.name}, category: ${item.category}, price: ${item.price}, quantity: ${item.quantity}`,
+  )
+  .join("\n")}
+
+Normal Stock: \n${inventory
+  .filter((item) => getProductStatus(item) == "normal")
+  .map(
+    (item) =>
+      `name: ${item.name}, category: ${item.category}, price: ${item.price}, quantity: ${item.quantity}`,
+  )
+  .join("\n")}
+  
+High Stock: \n${inventory
+  .filter((item) => getProductStatus(item) == "high")
+  .map(
+    (item) =>
+      `name: ${item.name}, category: ${item.category}, price: ${item.price}, quantity: ${item.quantity}`,
+  )
+  .join("\n")}
 
 === INVENTORY STATUS ===
 
-${rateInventoryStatus(quantity).toUpperCase()}
+${getInventoryStatus(inventory).toUpperCase()}
     `);
+
+// change data structure: array of objects        v
+// calculate: - Total number of items in stock    v
+//            - Average quantity per product      v
+//            - Highest-stock product             v
+//            - Lowest-stock product              v
+//            - Total inventory value (qty*price) v
+
+// Status for each product                                                v
+// Product categories, show by category()                                 v
+// search product by name(), check if product exists()                    v
+// Filter by status (out-of-stock, low, high, etc), filter by category    v
+
+// New features:  - add new product,                        v
+//                - remove product,                         v
+//                - update product quantity,                v
+//                - update price                            v
+//                -- just functions, no UI
+
+// sorting by (qty ascending/price descending)              v
+// update summary status to accomodate new data structure
